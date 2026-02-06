@@ -1,0 +1,40 @@
+1. Get the application URL by running these commands:
+{{- if contains "NodePort" .Values.frontend.service.type }}
+  export NODE_PORT=$(kubectl get services --namespace {{ .Values.namespace }} -o jsonpath="{.items[0].spec.ports[0].nodePort}" -l app={{ .Release.Name }}-frontend)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Values.namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.frontend.service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  You can watch the status by running 'kubectl get svc --namespace {{ .Values.namespace }} -w {{ .Release.Name }}-frontend'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Values.namespace }} {{ .Release.Name }}-frontend -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.frontend.service.port }}
+{{- else if contains "ClusterIP" .Values.frontend.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Values.namespace }} -l app={{ .Release.Name }}-frontend -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://localhost:{{ .Values.frontend.service.port }} to use your application"
+  kubectl --namespace {{ .Values.namespace }} port-forward $POD_NAME {{ .Values.frontend.service.port }}:{{ .Values.frontend.service.targetPort }}
+{{- end }}
+
+2. Verify all pods are running:
+  kubectl get pods --namespace {{ .Values.namespace }} -l app={{ .Release.Name }}
+
+3. Check the deployment status:
+  kubectl rollout status deployment/{{ .Release.Name }}-frontend --namespace {{ .Values.namespace }}
+  kubectl rollout status deployment/{{ .Release.Name }}-backend --namespace {{ .Values.namespace }}
+
+4. View logs:
+  kubectl logs --namespace {{ .Values.namespace }} -l app={{ .Release.Name }}-frontend
+  kubectl logs --namespace {{ .Values.namespace }} -l app={{ .Release.Name }}-backend
+
+5. Check services:
+  kubectl get services --namespace {{ .Values.namespace }}
+
+6. Verify health checks:
+  # Frontend health
+  kubectl port-forward --namespace {{ .Values.namespace }} svc/{{ .Release.Name }}-frontend {{ .Values.frontend.service.port }}:{{ .Values.frontend.service.port }} &
+  curl http://localhost:{{ .Values.frontend.service.port }}/health
+
+  # Backend health
+  kubectl port-forward --namespace {{ .Values.namespace }} svc/{{ .Release.Name }}-backend {{ .Values.backend.service.port }}:{{ .Values.backend.service.port }} &
+  curl http://localhost:{{ .Values.backend.service.port }}/health
+
+For more information, please refer to the documentation at: docs/DEPLOYMENT.md

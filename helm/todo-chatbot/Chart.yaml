@@ -1,0 +1,18 @@
+apiVersion: v2
+name: todo-chatbot
+description: Cloud Native Todo Chatbot with Kubernetes Deployment
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - todo
+  - chatbot
+  - kubernetes
+  - helm
+  - minikube
+home: https://github.com/yourorg/todo-chatbot
+sources:
+  - https://github.com/yourorg/todo-chatbot
+maintainers:
+  - name: Development Team
+    email: dev@example.com

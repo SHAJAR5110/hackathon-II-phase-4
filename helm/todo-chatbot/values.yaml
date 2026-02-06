@@ -1,0 +1,142 @@
+# Default values for todo-chatbot Helm chart
+# This is a YAML-formatted file for development environment (Minikube)
+# Declare variables to be passed into your templates
+
+# Global settings
+replicaCount: 1
+namespace: default
+
+# Frontend Deployment Configuration
+frontend:
+  name: frontend
+  replicaCount: 1
+
+  image:
+    repository: localhost:5000/todo-frontend
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  service:
+    type: LoadBalancer
+    port: 3000
+    targetPort: 3000
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Kubernetes probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Backend Deployment Configuration
+backend:
+  name: backend
+  replicaCount: 1
+
+  image:
+    repository: localhost:5000/todo-backend
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Kubernetes probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Configuration: Non-sensitive environment variables
+config:
+  backendUrl: "http://todo-chatbot-backend:8000"
+  databaseHost: "neon-staging.us-east-1.postgres.vercel-storage.com"
+  databasePort: "5432"
+  databaseName: "todo_chatbot"
+  environment: "development"
+  logLevel: "DEBUG"
+
+# Secrets: Sensitive data (injected at deployment time, never committed to git)
+secrets:
+  # These should be provided via --set flag during helm install/upgrade:
+  # helm install todo-chatbot ./helm/todo-chatbot \
+  #   --set secrets.databasePassword="<actual-password>" \
+  #   --set secrets.openaiApiKey="<actual-key>"
+  databasePassword: ""
+  openaiApiKey: ""
+
+# Pod labels for organization
+labels:
+  app: todo-chatbot
+  version: "1.0.0"
+  managed-by: helm
+
+# Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Pod restart policy
+restartPolicy: Always
+
+# Image pull policy
+imagePullPolicy: IfNotPresent
+
+# Node selector (empty for development)
+nodeSelector: {}
+
+# Tolerations (empty for development)
+tolerations: []
+
+# Affinity (empty for development)
+affinity: {}
+
+# Security context (basic security for development)
+securityContext:
+  runAsNonRoot: true
+  fsReadOnlyRootFilesystem: false
