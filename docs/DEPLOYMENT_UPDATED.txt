@@ -49,7 +49,7 @@ Expected: 1 chart(s) linted, 0 chart(s) failed
 STEP 6: Deploy with Helm (1-2 minutes)
 ======================================
 
-helm install todo-chatbot helm/todo-chatbot/ \--set secrets.databaseUrl="postgresql://neondb_owner:npg_irX68emINVFq@ep-withered-hill-aia49rqf-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" \--set secrets.betterAuthSecret="test-secret-key-for-testing-only"
+helm install todo-chatbot helm/todo-chatbot/ \--set secrets.databaseUrl="" \--set secrets.betterAuthSecret=""
 
 Verify:
   helm list
