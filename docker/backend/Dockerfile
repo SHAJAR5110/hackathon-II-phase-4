@@ -5,7 +5,7 @@ FROM python:3.11-slim AS builder
 WORKDIR /app
 
 # Copy requirements file
-COPY backend/requirements.txt .
+COPY huggingface-backend/requirements.txt .
 
 # Install dependencies to user site-packages
 RUN pip install --user --no-cache-dir -r requirements.txt
@@ -19,7 +19,7 @@ WORKDIR /app
 COPY --from=builder /root/.local /root/.local
 
 # Copy application code
-COPY backend/ .
+COPY huggingface-backend/ .
 
 # Set environment variables for Python
 ENV PATH=/root/.local/bin:$PATH \
