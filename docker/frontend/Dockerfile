@@ -1,23 +1,27 @@
 # Multi-stage build for Next.js/React frontend
-# Stage 1: Build stage with all dependencies
-FROM node:18-alpine AS builder
+# Using node:20-slim (Debian) with build tools for native module compilation
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy package files (minimal cache invalidation)
+# Install build tools for native module compilation
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
 COPY frontend/package.json frontend/package-lock.json* frontend/yarn.lock* ./
 
-# Install dependencies
-RUN npm ci --only=production || yarn install --production
+# Install dependencies and rebuild native modules
+RUN npm ci --legacy-peer-deps || yarn install
+RUN npm rebuild
 
 # Copy source code and build
 COPY frontend/ .
 
-# Build Next.js application
-RUN npm run build || yarn build
+# Build Next.js application with SWC instead of Turbopack (avoid lightningcss issues)
+RUN NEXT_SKIP_ENV_VALIDATION=1 npm run build || yarn build
 
 # Stage 2: Runtime stage with only built artifacts
-FROM node:18-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
@@ -25,16 +29,13 @@ WORKDIR /app
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
-COPY frontend/next.config.js ./
-COPY frontend/package.json ./
+COPY --from=builder /app/package.json ./
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+RUN useradd -m -u 1001 nextjs
 
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
 # Health check endpoint (Kubernetes liveness/readiness probes)

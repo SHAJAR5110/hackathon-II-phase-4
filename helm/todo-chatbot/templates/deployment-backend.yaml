@@ -38,45 +38,51 @@ spec:
         env:
         # Non-sensitive configuration from ConfigMap
         - name: BACKEND_URL
-          value: "http://localhost:{{ .Values.backend.service.targetPort }}"
-        - name: DATABASE_HOST
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-config
-              key: DATABASE_HOST
-        - name: DATABASE_PORT
+              key: BACKEND_URL
+        - name: APP_ENV
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-config
-              key: DATABASE_PORT
-        - name: DATABASE_NAME
+              key: APP_ENV
+        - name: DEBUG
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-config
-              key: DATABASE_NAME
-        - name: ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-config
-              key: ENVIRONMENT
+              key: DEBUG
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-config
               key: LOG_LEVEL
+        - name: JWT_ALGORITHM
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-config
+              key: JWT_ALGORITHM
+        - name: JWT_EXPIRATION_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-config
+              key: JWT_EXPIRATION_DAYS
+        - name: ALLOWED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-config
+              key: ALLOWED_ORIGINS
         # Sensitive data from Secrets
         - name: DATABASE_URL
-          value: "postgresql://postgres:$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
-        - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-secrets
-              key: DATABASE_PASSWORD
-        - name: OPENAI_API_KEY
+              key: DATABASE_URL
+        - name: BETTER_AUTH_SECRET
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-secrets
-              key: OPENAI_API_KEY
+              key: BETTER_AUTH_SECRET
 
         # Liveness probe: Restarts container if failing (includes database check)
         livenessProbe:

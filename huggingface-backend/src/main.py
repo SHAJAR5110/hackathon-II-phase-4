@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .logging_config import get_logger, setup_logging
-from .middleware.auth import auth_middleware
+# from .middleware.auth import auth_middleware  # Not needed - auth is handled per-route
 from .middleware.errors import error_handling_middleware
 from .middleware.logging_middleware import logging_middleware
 from .routes import chat_router, tasks_router, users_router
@@ -32,17 +32,21 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events
-
+    
     NOTE: MCP Server Integration (Phase 7)
     The MCP server for tool management is currently initialized in registry.py
     but not actively used in the agent pipeline yet. Full OpenAI Agents SDK
     integration with MCP tools will be implemented in Phase 7 (Frontend Integration).
-
+    
     When ready to implement:
     1. Import MCP server: from .mcp_server import start_server
     2. Start in lifespan: server = start_server()
     3. Register tools and ensure proper lifecycle management
     """
+    # Initialize database on startup
+    from .db import init_db
+    await init_db()
+    
     logger.info(
         "Application starting up", environment=os.getenv("ENVIRONMENT", "development")
     )
@@ -59,13 +63,12 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Allow requests from frontend during development
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:8000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8000",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,12 +76,11 @@ app.add_middleware(
 
 # Register middleware in order (LIFO - registered last executes first):
 # Note: FastAPI middleware stack is LIFO, so innermost (first to execute) is registered last
-# Execution order: logging_middleware → auth_middleware → error_handling_middleware
+# Execution order: logging_middleware → error_handling_middleware
 # 1. logging_middleware: Generate request_id and log incoming requests
-# 2. auth_middleware: Extract and validate user_id from Authorization header
-# 3. error_handling_middleware: Catch all exceptions and format responses
+# 2. error_handling_middleware: Catch all exceptions and format responses
+# Auth is handled per-route using Depends(get_current_user_id)
 app.middleware("http")(error_handling_middleware)
-app.middleware("http")(auth_middleware)
 app.middleware("http")(logging_middleware)
 
 # Include routers

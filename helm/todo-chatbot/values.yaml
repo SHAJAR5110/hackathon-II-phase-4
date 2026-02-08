@@ -12,7 +12,7 @@ frontend:
   replicaCount: 1
 
   image:
-    repository: localhost:5000/todo-frontend
+    repository: todo-frontend
     pullPolicy: IfNotPresent
     tag: latest
 
@@ -54,7 +54,7 @@ backend:
   replicaCount: 1
 
   image:
-    repository: localhost:5000/todo-backend
+    repository: todo-huggingface-backend
     pullPolicy: IfNotPresent
     tag: latest
 
@@ -93,20 +93,21 @@ backend:
 # Configuration: Non-sensitive environment variables
 config:
   backendUrl: "http://todo-chatbot-backend:8000"
-  databaseHost: "neon-staging.us-east-1.postgres.vercel-storage.com"
-  databasePort: "5432"
-  databaseName: "todo_chatbot"
-  environment: "development"
-  logLevel: "DEBUG"
+  appEnv: "production"
+  debug: "False"
+  jwtAlgorithm: "HS256"
+  jwtExpirationDays: "7"
+  logLevel: "INFO"
+  allowedOrigins: "http://localhost:3000"  # Update with your frontend URL
 
 # Secrets: Sensitive data (injected at deployment time, never committed to git)
 secrets:
   # These should be provided via --set flag during helm install/upgrade:
   # helm install todo-chatbot ./helm/todo-chatbot \
-  #   --set secrets.databasePassword="<actual-password>" \
-  #   --set secrets.openaiApiKey="<actual-key>"
-  databasePassword: ""
-  openaiApiKey: ""
+  #   --set secrets.databaseUrl="postgresql://user:pass@host/db" \
+  #   --set secrets.betterAuthSecret="your-secret-key"
+  databaseUrl: ""  # postgresql://user:password@host/database
+  betterAuthSecret: ""  # Must be at least 32 characters, same as frontend
 
 # Pod labels for organization
 labels:
@@ -137,6 +138,5 @@ tolerations: []
 affinity: {}
 
 # Security context (basic security for development)
-securityContext:
-  runAsNonRoot: true
-  fsReadOnlyRootFilesystem: false
+# Note: runAsNonRoot removed as Kubernetes can't verify named users
+securityContext: {}

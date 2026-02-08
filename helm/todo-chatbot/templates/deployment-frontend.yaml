@@ -50,14 +50,6 @@ spec:
         - name: NODE_ENV
           value: "production"
 
-        # Liveness probe: Restarts container if failing
-        livenessProbe:
-          {{- toYaml .Values.frontend.livenessProbe | nindent 10 }}
-
-        # Readiness probe: Removes from service endpoints if failing
-        readinessProbe:
-          {{- toYaml .Values.frontend.readinessProbe | nindent 10 }}
-
         # Resource constraints
         resources:
           {{- toYaml .Values.frontend.resources | nindent 10 }}

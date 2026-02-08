@@ -45,10 +45,10 @@ All paths are relative to repository root:
 
 ### Project Structure & Documentation
 
-- [ ] T007 Create docker/ directory structure: `docker/frontend/` and `docker/backend/` subdirectories
-- [ ] T008 [P] Create helm/ directory structure: `helm/todo-chatbot/templates/` subdirectories
-- [ ] T009 [P] Create docs/ directory for deployment documentation
-- [ ] T010 [P] Create .dockerignore file in repository root (exclude node_modules, .git, __pycache__, etc.)
+- [x] T007 Create docker/ directory structure: `docker/frontend/` and `docker/backend/` subdirectories
+- [x] T008 [P] Create helm/ directory structure: `helm/todo-chatbot/templates/` subdirectories
+- [x] T009 [P] Create docs/ directory for deployment documentation
+- [x] T010 [P] Create .dockerignore file in repository root (exclude node_modules, .git, __pycache__, etc.)
 - [ ] T011 [P] Create docker-compose.yml for optional local multi-container testing
 - [ ] T012 Create README.md in docker/ directory with build instructions
 
@@ -69,33 +69,33 @@ All paths are relative to repository root:
 
 ### Docker Best Practices & Base Configuration
 
-- [ ] T017 Create .dockerignore with exclusions: `node_modules/`, `.git/`, `.next/`, `__pycache__/`, `*.pyc`, `.pytest_cache/`, `node-modules.tar`
+- [x] T017 Create .dockerignore with exclusions: `node_modules/`, `.git/`, `.next/`, `__pycache__/`, `*.pyc`, `.pytest_cache/`, `node-modules.tar`
 - [ ] T018 Research and document Docker image optimization strategies in research notes
 - [ ] T019 Research and document Dockerfile health check patterns for Kubernetes
 
 ### Helm Chart Foundation
 
-- [ ] T020 Create `helm/todo-chatbot/Chart.yaml` with chart metadata (name, version, appVersion, description)
-- [ ] T021 Create `helm/todo-chatbot/values.yaml` with default values structure:
+- [x] T020 Create `helm/todo-chatbot/Chart.yaml` with chart metadata (name, version, appVersion, description)
+- [x] T021 Create `helm/todo-chatbot/values.yaml` with default values structure:
   - Frontend image, replicas, ports, resources (requests/limits)
   - Backend image, replicas, ports, resources (requests/limits)
   - Database config (host, port, name)
   - Secrets placeholders (databasePassword, openaiApiKey)
 - [ ] T022 Create `helm/todo-chatbot/values-dev.yaml` for development overrides (localhost registry references)
-- [ ] T023 Create `helm/todo-chatbot/templates/_helpers.tpl` with common Helm template helpers:
+- [x] T023 Create `helm/todo-chatbot/templates/_helpers.tpl` with common Helm template helpers:
   - `labels` helper for pod labels
   - `selector` helper for pod selectors
   - `fullname` helper for resource naming
-- [ ] T024 Create `helm/todo-chatbot/templates/NOTES.txt` with post-deployment instructions
+- [x] T024 Create `helm/todo-chatbot/templates/NOTES.txt` with post-deployment instructions
 
 ### Kubernetes Resource Templates
 
-- [ ] T025 Create `helm/todo-chatbot/templates/deployment-frontend.yaml` with complete Deployment manifest structure
-- [ ] T026 Create `helm/todo-chatbot/templates/deployment-backend.yaml` with complete Deployment manifest structure
-- [ ] T027 Create `helm/todo-chatbot/templates/service-frontend.yaml` (LoadBalancer type for local access)
-- [ ] T028 Create `helm/todo-chatbot/templates/service-backend.yaml` (ClusterIP type for internal access)
-- [ ] T029 Create `helm/todo-chatbot/templates/configmap.yaml` with environment variables
-- [ ] T030 Create `helm/todo-chatbot/templates/secret.yaml` with base64-encoded secrets template
+- [x] T025 Create `helm/todo-chatbot/templates/deployment-frontend.yaml` with complete Deployment manifest structure
+- [x] T026 Create `helm/todo-chatbot/templates/deployment-backend.yaml` with complete Deployment manifest structure
+- [x] T027 Create `helm/todo-chatbot/templates/service-frontend.yaml` (LoadBalancer type for local access)
+- [x] T028 Create `helm/todo-chatbot/templates/service-backend.yaml` (ClusterIP type for internal access)
+- [x] T029 Create `helm/todo-chatbot/templates/configmap.yaml` with environment variables
+- [x] T030 Create `helm/todo-chatbot/templates/secret.yaml` with base64-encoded secrets template
 
 ### Helm Chart Validation
 
@@ -115,7 +115,7 @@ All paths are relative to repository root:
 
 ### Dockerfile Development
 
-- [ ] T034 Create `docker/frontend/Dockerfile` with:
+- [x] T034 Create `docker/frontend/Dockerfile` with:
   - Multi-stage build (build + runtime stages)
   - Node.js 18-alpine base image
   - Build stage: npm install + npm run build
@@ -123,7 +123,7 @@ All paths are relative to repository root:
   - Expose port 3000
   - Health check: GET /health endpoint
   - Non-root user
-- [ ] T035 Create `docker/backend/Dockerfile` with:
+- [x] T035 Create `docker/backend/Dockerfile` with:
   - Multi-stage build (build + runtime stages)
   - Python 3.11-slim base image
   - Build stage: pip install -r requirements.txt
@@ -344,7 +344,7 @@ All paths are relative to repository root:
 
 ### Documentation for User Story 3
 
-- [ ] T077 [US3] Create `docs/KUBECTL-AI.md` with:
+- [x] T077 [US3] Create `docs/KUBECTL-AI.md` with:
   - kubectl-ai command examples for common operations
   - Natural language commands and their kubectl equivalents
   - Deployment commands: "deploy todo chatbot", "scale backend to 3 replicas"
@@ -507,7 +507,7 @@ All paths are relative to repository root:
 
 ### Gordon Integration Documentation
 
-- [ ] T098 [US5] Create `docs/GORDON.md` with:
+- [x] T098 [US5] Create `docs/GORDON.md` with:
   - Gordon setup instructions (Docker Desktop 4.53+, enable beta features)
   - Enable/disable Gordon in Docker Desktop Settings
   - Example `docker ai` commands:
@@ -562,7 +562,7 @@ All paths are relative to repository root:
 
 ### Comprehensive Documentation
 
-- [ ] T103 Create `docs/DEPLOYMENT.md` (main guide):
+- [x] T103 Create `docs/DEPLOYMENT.md` (main guide):
   - 8-step quick-start deployment (from quickstart.md)
   - Prerequisites checklist
   - Step-by-step instructions with commands
@@ -575,7 +575,7 @@ All paths are relative to repository root:
   - Kubernetes resource structure
   - Data flow diagrams
 
-- [ ] T105 [P] Create `docs/TROUBLESHOOTING.md`:
+- [x] T105 [P] Create `docs/TROUBLESHOOTING.md`:
   - Common issues and solutions:
     - Pods won't start (Pending state)
     - ImagePullBackOff errors
