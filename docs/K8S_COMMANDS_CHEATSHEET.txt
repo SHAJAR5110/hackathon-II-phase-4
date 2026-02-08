@@ -1,0 +1,223 @@
+KUBERNETES COMMANDS CHEATSHEET
+==============================
+
+=== DOCKER COMMANDS ===
+
+Build Image:
+  docker build -t image:tag -f Dockerfile .
+
+Run Container:
+  docker run -d -p 3000:3000 -e NODE_ENV=prod image:tag
+
+List Containers:
+  docker ps
+
+View Logs:
+  docker logs -f container-name
+
+Stop Container:
+  docker stop container-name
+
+Remove Container:
+  docker rm container-name
+
+Push to Registry:
+  docker push registry/image:tag
+
+=== KUBERNETES COMMANDS ===
+
+Deploy:
+  kubectl apply -f deployment.yaml
+  kubectl apply -f .
+
+Get Resources:
+  kubectl get pods
+  kubectl get services
+  kubectl get deployments
+  kubectl get configmaps
+  kubectl get secrets
+
+Describe (Details):
+  kubectl describe pod pod-name
+  kubectl describe service service-name
+  kubectl describe deployment deployment-name
+
+View Logs:
+  kubectl logs pod-name
+  kubectl logs -f pod-name (stream)
+  kubectl logs pod-name --tail=100
+
+Execute in Pod:
+  kubectl exec -it pod-name -- bash
+  kubectl exec pod-name -- curl http://localhost:3000
+
+Port Forward (Local Access):
+  kubectl port-forward svc/service-name 3000:3000
+  kubectl port-forward pod/pod-name 3000:3000
+
+Scale:
+  kubectl scale deployment app --replicas=5
+
+Update Image:
+  kubectl set image deployment/app app=image:2.0
+
+Check Update Status:
+  kubectl rollout status deployment/app
+
+Rollback Update:
+  kubectl rollout undo deployment/app
+
+View Update History:
+  kubectl rollout history deployment/app
+
+Delete:
+  kubectl delete pod pod-name
+  kubectl delete deployment app
+  kubectl delete service service-name
+
+View Events:
+  kubectl get events --sort-by='.lastTimestamp'
+
+Describe Nodes:
+  kubectl get nodes
+  kubectl describe node node-name
+
+=== HELM COMMANDS ===
+
+Install:
+  helm install release-name ./helm/chart
+
+Install with Values:
+  helm install release-name ./helm/chart -f values-prod.yaml
+
+Install with Overrides:
+  helm install release-name ./helm/chart --set replicas=5 --set image.tag=2.0
+
+Upgrade:
+  helm upgrade release-name ./helm/chart
+
+Upgrade with Values:
+  helm upgrade release-name ./helm/chart -f values-prod.yaml
+
+Rollback:
+  helm rollback release-name
+  helm rollback release-name 3 (specific revision)
+
+View Status:
+  helm status release-name
+
+View History:
+  helm history release-name
+
+List Releases:
+  helm list
+
+Uninstall:
+  helm uninstall release-name
+
+Validate Chart:
+  helm lint ./helm/chart
+
+See Rendered YAML:
+  helm template release-name ./helm/chart
+
+Dry Run (preview):
+  helm install release-name ./helm/chart --dry-run --debug
+
+=== MINIKUBE COMMANDS ===
+
+Start:
+  minikube start
+  minikube start --memory=4096 --cpus=4
+
+Stop:
+  minikube stop
+
+Delete:
+  minikube delete
+
+Load Docker Image:
+  minikube image load image:tag
+
+List Images:
+  minikube image ls
+
+Dashboard (Web UI):
+  minikube dashboard
+
+Get IP:
+  minikube ip
+
+SSH into Node:
+  minikube ssh
+
+=== COMMON WORKFLOWS ===
+
+Workflow 1: Build and Deploy
+  docker build -t app:1.0 -f Dockerfile .
+  minikube image load app:1.0
+  helm install myapp ./helm/app
+
+Workflow 2: Update and Deploy
+  docker build -t app:2.0 -f Dockerfile .
+  minikube image load app:2.0
+  helm upgrade myapp ./helm/app --set image.tag=2.0
+
+Workflow 3: Debug Pod
+  kubectl logs pod-name
+  kubectl describe pod pod-name
+  kubectl exec -it pod-name -- bash
+
+Workflow 4: Check Health
+  kubectl get pods (check status)
+  kubectl get services (check endpoints)
+  kubectl port-forward svc/app 3000:3000
+  curl http://localhost:3000
+
+Workflow 5: Scale Application
+  kubectl scale deployment app --replicas=5
+  kubectl get pods -w (watch scaling)
+
+Workflow 6: Rollback
+  helm rollback release-name
+  OR
+  kubectl rollout undo deployment/app
+
+=== TROUBLESHOOTING ===
+
+ImagePullBackOff:
+  minikube image load image:tag
+
+CrashLoopBackOff:
+  kubectl logs pod-name
+  kubectl describe pod pod-name
+
+Pending Pod:
+  kubectl describe pod pod-name
+  kubectl top nodes
+
+Network Issues:
+  kubectl exec pod-name -- nslookup service-name
+  kubectl exec pod-name -- curl http://service:port
+
+=== QUICK REFERENCE ===
+
+Check Everything:
+  kubectl get all
+  kubectl get events
+
+Filter by Label:
+  kubectl get pods -l app=myapp
+  kubectl get pods -l tier=frontend
+
+Output Formats:
+  kubectl get pods -o wide
+  kubectl get pods -o yaml
+  kubectl get pods -o json
+
+Watch in Real-time:
+  kubectl get pods -w
+
+Sort Output:
+  kubectl get pods --sort-by=.metadata.creationTimestamp
+

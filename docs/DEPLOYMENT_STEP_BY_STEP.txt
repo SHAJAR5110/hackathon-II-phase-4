@@ -1,0 +1,280 @@
+KUBERNETES DEPLOYMENT GUIDE - STEP BY STEP
+===========================================
+
+PREREQUISITES
+=============
+
+1. Docker installed and running
+2. Minikube installed
+3. kubectl installed
+4. Helm installed
+
+Check versions:
+  docker --version
+  minikube --version
+  kubectl version --client
+  helm version
+
+STEP 1: BUILD DOCKER IMAGES
+============================
+
+Build Frontend Image:
+  docker build -t todo-frontend:1.0 -f docker/frontend/Dockerfile .
+  
+Expected output:
+  (multiple build steps)
+  Successfully tagged todo-frontend:1.0
+
+Build Backend Image:
+  docker build -t todo-backend:1.0 -f docker/backend/Dockerfile .
+  
+Expected output:
+  Successfully tagged todo-backend:1.0
+
+Verify Images:
+  docker images | grep todo
+  
+Expected output:
+  REPOSITORY             TAG      IMAGE ID
+  todo-frontend          1.0      abc123...
+  todo-backend           1.0      xyz789...
+
+STEP 2: START MINIKUBE
+======================
+
+Start Minikube:
+  minikube start --memory=4096 --cpus=4
+  
+Expected output:
+  Starting control plane node minikube
+  Successfully started minikube!
+
+Verify Cluster:
+  kubectl get nodes
+  
+Expected output:
+  NAME       STATUS   ROLES
+  minikube   Ready    control-plane
+
+STEP 3: LOAD IMAGES TO MINIKUBE
+================================
+
+Minikube has its own Docker registry.
+Load frontend image:
+  minikube image load todo-frontend:1.0
+
+Load backend image:
+  minikube image load todo-backend:1.0
+
+Verify Images in Minikube:
+  minikube image ls | grep todo
+  
+Expected output:
+  docker.io/library/todo-frontend:1.0
+  docker.io/library/todo-backend:1.0
+
+STEP 4: VALIDATE HELM CHART
+============================
+
+Lint chart (check for errors):
+  helm lint helm/todo-chatbot/
+  
+Expected output:
+  1 chart(s) linted, 0 chart(s) failed
+
+View default values:
+  cat helm/todo-chatbot/values.yaml
+
+Preview rendered YAML:
+  helm template todo-chatbot helm/todo-chatbot/
+  
+Expected output:
+  (YAML definitions with values filled in)
+
+STEP 5: DEPLOY WITH HELM
+=========================
+
+Get your secrets ready:
+  DATABASE_URL: postgresql://user:pass@host:5432/db
+  BETTER_AUTH_SECRET: your-secret-key-here
+
+Install release:
+  helm install todo-chatbot helm/todo-chatbot/
+    --set secrets.databaseUrl="postgresql://user:pass@host:5432/db"
+    --set secrets.betterAuthSecret="your-secret-here"
+
+Expected output:
+  NAME: todo-chatbot
+  LAST DEPLOYED: ...
+  NAMESPACE: default
+  STATUS: deployed
+  REVISION: 1
+
+STEP 6: VERIFY DEPLOYMENT
+==========================
+
+Check pod status:
+  kubectl get pods
+  
+Expected output (READY 1/1, Running):
+  NAME                        READY  STATUS   RESTARTS
+  frontend-...                1/1    Running  0
+  frontend-...                1/1    Running  0
+  backend-...                 1/1    Running  0
+  backend-...                 1/1    Running  0
+
+Check services:
+  kubectl get services
+  
+Expected output:
+  NAME            TYPE           PORT(S)
+  frontend-svc    LoadBalancer   80:xxxxx/TCP
+  backend-svc     ClusterIP      8000/TCP
+
+Check Helm status:
+  helm status todo-chatbot
+  
+Shows all deployed resources
+
+STEP 7: ACCESS APPLICATION
+===========================
+
+Port forward frontend (in terminal 1):
+  kubectl port-forward svc/frontend-svc 3000:3000
+  
+Expected output:
+  Forwarding from 127.0.0.1:3000 -> 3000
+
+Port forward backend (in terminal 2):
+  kubectl port-forward svc/backend-svc 8000:8000
+  
+Expected output:
+  Forwarding from 127.0.0.1:8000 -> 8000
+
+Test frontend:
+  curl http://localhost:3000
+  
+Expected: HTML response
+
+Test backend:
+  curl http://localhost:8000/health
+  
+Expected: {"status": "ok"}
+
+Open in browser:
+  http://localhost:3000
+
+STEP 8: MONITOR & DEBUG
+=======================
+
+View logs:
+  kubectl logs -f deployment/frontend
+  kubectl logs -f deployment/backend
+
+View pod details:
+  kubectl describe pod <pod-name>
+
+Check events:
+  kubectl get events --sort-by='.lastTimestamp'
+
+Check resource usage:
+  kubectl top pods
+
+STEP 9: UPDATE APPLICATION
+===========================
+
+Update code:
+  (make changes to frontend/backend)
+
+Build new image:
+  docker build -t todo-frontend:2.0 -f docker/frontend/Dockerfile .
+
+Load to Minikube:
+  minikube image load todo-frontend:2.0
+
+Upgrade Helm release:
+  helm upgrade todo-chatbot helm/todo-chatbot/
+    --set frontend.image.tag=2.0
+
+Watch rollout:
+  kubectl rollout status deployment/frontend
+
+If issues, rollback:
+  helm rollback todo-chatbot
+
+STEP 10: CLEANUP
+================
+
+Stop port forwards (Ctrl+C in each terminal)
+
+Uninstall release:
+  helm uninstall todo-chatbot
+
+Stop Minikube:
+  minikube stop
+
+Delete Minikube (optional):
+  minikube delete
+
+TROUBLESHOOTING
+===============
+
+ImagePullBackOff:
+  Problem: Can't find image
+  Solution: minikube image load image:tag
+
+CrashLoopBackOff:
+  Problem: Pod keeps crashing
+  Solution: 
+    kubectl logs pod-name
+    kubectl describe pod pod-name
+    Fix the error and redeploy
+
+Pending:
+  Problem: Pod can't be scheduled
+  Solution:
+    kubectl describe pod pod-name
+    Check resource requests
+
+Network unreachable:
+  Problem: Frontend can't reach backend
+  Solution:
+    kubectl exec frontend-pod -- curl http://backend-service:8000
+    Check service name and port
+
+Port forward not working:
+  Problem: Can't access localhost:3000
+  Solution:
+    Check port-forward still running
+    Try different port: kubectl port-forward svc/frontend-svc 8080:3000
+
+SUCCESS CHECKLIST
+=================
+
+[ ] Docker installed and running
+[ ] Minikube started (status: Running)
+[ ] Frontend image built (tag: 1.0)
+[ ] Backend image built (tag: 1.0)
+[ ] Images loaded to Minikube
+[ ] Helm chart linted (0 errors)
+[ ] Release deployed (status: deployed)
+[ ] All pods running (READY: 1/1, STATUS: Running)
+[ ] Services visible (frontend, backend)
+[ ] Port forwards working
+[ ] Frontend loads (http://localhost:3000)
+[ ] Backend responds (curl /health)
+[ ] Can create/list/delete tasks
+
+If all checked = DEPLOYMENT SUCCESS!
+
+NEXT STEPS
+==========
+
+1. Explore the application
+2. Test all features
+3. Check logs for errors
+4. Practice scaling: kubectl scale deployment frontend --replicas=5
+5. Practice rollback: helm rollback todo-chatbot
+6. Read architecture guide for deeper understanding
+7. Prepare for production deployment
+
